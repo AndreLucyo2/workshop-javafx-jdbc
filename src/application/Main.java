@@ -13,24 +13,29 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	@Override
-	public void start(Stage stage)
+	public void start(Stage primaryStage)
 	{
 		try
 		{
-			// 1- Lê/Carrega o FXML - Passar o caminho completo do FXML
-			Parent parent = FXMLLoader.load(getClass().getResource("/gui/View.fxml"));
+			// 1- Lê/Carrega o FXML - Passar o caminho completo do FXML da VIEW/Tela
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainView.fxml"));
+			// 2 - Carregar o control Parent: Controle principal, pai de todos neste exemplo um AnchorPane		
+			Parent parent = loader.load();
 			
-			// 2 - Coloca o FXML em uma Scene
-			Scene scene = new Scene(parent);
+			// 3 - Coloca o FXML em uma Scene
+			Scene mainScene = new Scene(parent);
 
 			// CSS de Styles:
-			//scene.getStylesheets().add("/application/application.css");
+			//mainScene.getStylesheets().add("/application/application.css");
 
-			// 3 - Coloca a Scene em uma janela
-			stage.setScene(scene);
+			// 4 - Coloca a Scene em uma janela
+			primaryStage.setScene(mainScene);
+			primaryStage.setTitle("Sample JavaFX application");
 
-			// 4 - Mostra a tela
-			stage.show();
+			// 5 - Mostra a tela
+			primaryStage.show();
+					
+			
 		}
 		catch (IOException e)
 		{
