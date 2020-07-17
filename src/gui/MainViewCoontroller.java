@@ -43,10 +43,8 @@ public class MainViewCoontroller implements Initializable {
 	@FXML
 	public void onMenuItemDepartmentAction()
 	{
+		//Primeira versao, sem carregamento:
 		// loadView("/gui/DepartmentList.fxml");
-
-		// Aula sobre carregamento da tebleview com a observable list a partir do serviço:
-		// loadView2("/gui/DepartmentList.fxml");
 
 		// ====================================================================================
 		// LoadView com função de CARREGAR OS DADOS NA TABLEVIEW
