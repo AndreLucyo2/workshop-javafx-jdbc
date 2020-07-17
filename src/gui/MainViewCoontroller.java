@@ -8,6 +8,7 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import application.Main;
 import gui.util.Alerts;
@@ -45,13 +46,34 @@ public class MainViewCoontroller implements Initializable {
 		// loadView("/gui/DepartmentList.fxml");
 
 		// Aula sobre carregamento da tebleview com a observable list a partir do serviço:
-		loadView2("/gui/DepartmentList.fxml");
+		// loadView2("/gui/DepartmentList.fxml");
+
+		// ====================================================================================
+		// LoadView com função de CARREGAR OS DADOS NA TABLEVIEW
+		// ====================================================================================
+		// Load view com uma função de inicialização:
+		// usa uma função lambda, esta fução faz o carregamento
+		// da tableview, DepartmentListController o consumer<T> retorna o controller da classe informada
+		loadView("/gui/DepartmentList.fxml", (DepartmentListController controller) ->
+		{
+
+			// Carregar os dados na tableview --pega o controller da List e usa o serviço
+			controller.setDepartmentService(new DepartmentService());
+
+			// usa a injeção da dependencia criado no DepartmentListController:
+			// com isso tem acesso ao metodo para carregar a listagem:
+			controller.updateTableView();
+
+		});
 	}
 
 	@FXML
 	public void onMenuItemAbutAction()
 	{
-		loadView("/gui/About.fxml");
+		// como nao usa parametro, poe uma lambda que nao faz nada,
+		loadView("/gui/About.fxml", x ->
+		{
+		});
 	}
 
 	@Override
@@ -60,7 +82,9 @@ public class MainViewCoontroller implements Initializable {
 
 	}
 
-	private synchronized void loadView(String absoluteName)
+	//usa uma função como parametro, usa lambda e generics consumer<T> de um tipo qualquer e inicializavel
+	//adicona o comando para executar a função:
+	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction)
 	{
 		try
 		{
@@ -87,6 +111,14 @@ public class MainViewCoontroller implements Initializable {
 
 			// Adiciona todos os filhos da nova tela:
 			mainVBox.getChildren().addAll(newVBox.getChildren());
+
+			// ====================================================================================
+			// CARREGAR OS DADOS NA TABLEVIEW - função como argumento
+			// ====================================================================================
+			//pega o controller da List e usa o serviço, retorna um controller do tipo T
+			//estas duas linhas executam a função que for passada como argumento
+			T controller = loader.getController();
+			initializingAction.accept(controller);
 		}
 		catch (IOException e)
 		{
@@ -94,39 +126,6 @@ public class MainViewCoontroller implements Initializable {
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}
-
-	// Metodo temporario, sera ajustado, criado para teste do serviço de carregar a teble view
-	private synchronized void loadView2(String absoluteName)
-	{
-		try
-		{
-			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
-			VBox newVBox = loader.load();
-
-			Scene mainScene = Main.getMainScene();
-			VBox mainVBox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent();
-
-			Node mainMenu = mainVBox.getChildren().get(0);
-			mainVBox.getChildren().clear();
-			mainVBox.getChildren().add(mainMenu);
-			mainVBox.getChildren().addAll(newVBox.getChildren());
-			
-			//====================================================================================
-			//CARREGAR OS DADOS NA TABLEVIEW
-			//====================================================================================
-			// Carregar os dados na tableview --pega o controller da List e usa o serviço
-			DepartmentListController controller = loader.getController();
-
-			// usa a injeção da dependencia criado no DepartmentListController:
-			controller.setDepartmentService(new DepartmentService());
-
-			// com isso tem acesso ao metodo para carregar a listagem:
-			controller.updateTableView();
-		}
-		catch (IOException e)
-		{
-			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
-		}
-	}
+	
 
 }
