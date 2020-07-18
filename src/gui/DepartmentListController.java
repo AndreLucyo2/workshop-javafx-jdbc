@@ -5,19 +5,29 @@
  */
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import com.sun.javafx.scene.control.skin.Utils;
+
 import application.Main;
+import gui.util.Alerts;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
@@ -43,9 +53,13 @@ public class DepartmentListController implements Initializable {
 	private ObservableList<Department> obsList;
 
 	@FXML
-	public void onBtNewAction()
+	public void onBtNewAction(ActionEvent event)
 	{
-		System.out.println("onBtNewAction");
+		//pega a referencia para o stage atual
+		Stage parentStage = gui.util.Utils.currentStage(event);
+		
+		//carregar a tela passando o stage atual:
+		createDialogForm("/gui/DepartmentForm.fxml", parentStage);
 	}
 
 	// Injeção de dependencia: é um padrão solid, melhor em vez de dar um new service.
@@ -68,7 +82,7 @@ public class DepartmentListController implements Initializable {
 
 		// Fazer a Table acompanhar a janela: Macete
 		Stage stage = (Stage) Main.getMainScene().getWindow();
-		//Controla o teamaha da table view conforme ajusta a tela:
+		// Controla o teamaha da table view conforme ajusta a tela:
 		tableViewDepartment.prefHeightProperty().bind(stage.heightProperty());
 
 	}
@@ -91,6 +105,40 @@ public class DepartmentListController implements Initializable {
 
 		// Carrega a observablelist na table view
 		tableViewDepartment.setItems(obsList);
+	}
+
+	// Ao criar uma janela, sempre precisa informar o stage que criou a janela de dialogo,
+	// precisa passar o caminho aboluot da janela
+	private void createDialogForm(String absoluteName, Stage parentStage)
+	{
+		try
+		{
+			// Logica para abrir um janela de dialogo:
+			// Criar um loader
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			// Recebe um Panel do parametro: Carregou a view
+			Pane pane = loader.load();
+
+			// uma janela modal, precisa de uma novo stage, um pouco na frente do outro:
+			Stage dialogStage = new Stage();
+			// Titulo da tela:
+			dialogStage.setTitle("Enter Department data");
+			// Definir a cena:
+			dialogStage.setScene(new Scene(pane));
+			// nao deixa redimencionar:
+			dialogStage.setResizable(false);
+			// quem é o stage pai desta janela: pega do parametro
+			dialogStage.initOwner(parentStage);
+			// definir se sera modal: bloqueia a janela anterior:
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			// Mostra a janela:
+			dialogStage.showAndWait();
+		}
+		catch (IOException e)
+		{
+
+			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+		}
 	}
 
 }
