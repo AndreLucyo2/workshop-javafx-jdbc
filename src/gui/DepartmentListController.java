@@ -55,11 +55,17 @@ public class DepartmentListController implements Initializable {
 	@FXML
 	public void onBtNewAction(ActionEvent event)
 	{
-		//pega a referencia para o stage atual
+		// pega a referencia para o stage atual
 		Stage parentStage = gui.util.Utils.currentStage(event);
-		
-		//carregar a tela passando o stage atual:
-		createDialogForm("/gui/DepartmentForm.fxml", parentStage);
+
+		// Instancia um objeto vazio: ação de criar uma novo cadastro
+		Department obj = new Department();
+
+		// carregar a tela passando:
+		// -objeto: vazio para novo
+		// -a view FXML
+		// -o stage atual:
+		createDialogForm(obj, "/gui/DepartmentForm.fxml", parentStage);
 	}
 
 	// Injeção de dependencia: é um padrão solid, melhor em vez de dar um new service.
@@ -109,7 +115,8 @@ public class DepartmentListController implements Initializable {
 
 	// Ao criar uma janela, sempre precisa informar o stage que criou a janela de dialogo,
 	// precisa passar o caminho aboluot da janela
-	private void createDialogForm(String absoluteName, Stage parentStage)
+	// injeta um objeto departament na view DepartmentForm
+	private void createDialogForm(Department obj, String absoluteName, Stage parentStage)
 	{
 		try
 		{
@@ -119,7 +126,17 @@ public class DepartmentListController implements Initializable {
 			// Recebe um Panel do parametro: Carregou a view
 			Pane pane = loader.load();
 
-			// uma janela modal, precisa de uma novo stage, um pouco na frente do outro:
+			//=============================================================================
+			// injeta o departa no controller na view do formulario
+			// Pega o controller da tela recebida pelo parametro
+			DepartmentFormController controller = loader.getController();
+			// Injeta o objeto no controller
+			controller.setDepartment(obj);
+			// Chama o metodo que carrega os dados na tela:
+			controller.updateFormData();
+
+			//=============================================================================
+			// CRiar um novo stage para a janela modal, um pauco na frente do outro:
 			Stage dialogStage = new Stage();
 			// Titulo da tela:
 			dialogStage.setTitle("Enter Department data");
