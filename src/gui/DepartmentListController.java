@@ -10,8 +10,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.sun.javafx.scene.control.skin.Utils;
-
 import application.Main;
 import gui.util.Alerts;
 import javafx.collections.FXCollections;
@@ -49,11 +47,10 @@ public class DepartmentListController implements Initializable {
 	// Injeção de dependencia: ver setDepartmentService
 	private DepartmentService service;
 
-	//
 	private ObservableList<Department> obsList;
 
 	@FXML
-	public void onBtNewAction(ActionEvent event)
+	public void onBtNewAction(ActionEvent event)// para cadastrar um novo department
 	{
 		// pega a referencia para o stage atual
 		Stage parentStage = gui.util.Utils.currentStage(event);
@@ -126,16 +123,18 @@ public class DepartmentListController implements Initializable {
 			// Recebe um Panel do parametro: Carregou a view
 			Pane pane = loader.load();
 
-			//=============================================================================
+			// =============================================================================
 			// injeta o departa no controller na view do formulario
 			// Pega o controller da tela recebida pelo parametro
 			DepartmentFormController controller = loader.getController();
 			// Injeta o objeto no controller
 			controller.setDepartment(obj);
+			// Injeção de dependencia do service:
+			controller.setDepartmentService(new DepartmentService());
 			// Chama o metodo que carrega os dados na tela:
 			controller.updateFormData();
 
-			//=============================================================================
+			// =============================================================================
 			// CRiar um novo stage para a janela modal, um pauco na frente do outro:
 			Stage dialogStage = new Stage();
 			// Titulo da tela:

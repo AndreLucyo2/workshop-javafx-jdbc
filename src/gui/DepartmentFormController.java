@@ -3,18 +3,27 @@ package gui;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import db.DbException;
+import gui.util.Alerts;
 import gui.util.Constraints;
+import gui.util.Utils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.entities.Department;
+import model.services.DepartmentService;
 
 // or form tem dupla função, adicionar e atualizar
 public class DepartmentFormController implements Initializable {
 
 	private Department entity;
+
+	// Injeta a dependencia do serviço do DepartmentoService
+	private DepartmentService service;
 
 	@FXML
 	private TextField txtId;
@@ -38,16 +47,67 @@ public class DepartmentFormController implements Initializable {
 		this.entity = entity;
 	}
 
-	@FXML
-	public void onBtSaveAction()
+	// Injeção de dependencia do serviço
+	public void setDepartmentService(DepartmentService service)
 	{
-		System.out.println("onBtSaveAction");
+		this.service = service;
 	}
 
 	@FXML
-	public void onBtCancelAction()
+	public void onBtSaveAction(ActionEvent event)
 	{
-		System.out.println("onBtCancelAction");
+
+		// Como foi feito a injeção manualmente, validar se nao esta null
+		if (entity == null)
+		{
+			throw new IllegalStateException("Entity was null");
+		}
+
+		// Como foi feito a injeção manualmente, validar se nao esta null
+		if (service == null)
+		{
+			throw new IllegalStateException("Service was null");
+		}
+
+		// Como lida com banco, pode gerar db exception, usar try
+		try
+		{
+			// Pega os dados da tela: tanto para salvar quanto para alterar
+			entity = getFormData();
+
+			// Valida se é insert ou update, e grava / cria no banco
+			service.saveOrUpdate(entity);
+
+			// Manda fechar a janela atual, pega a referencia do evento
+			Utils.currentStage(event).close();
+		}
+		catch (DbException e)
+		{
+			Alerts.showAlert("Error saving object", null, e.getMessage(), AlertType.ERROR);
+		}
+
+	}
+
+	// Passar os dados da tela para uma instnaci do objeto obj
+	private Department getFormData()
+	{
+		// Instancia um objeto:
+		Department obj = new Department();
+
+		// Pega os dados da tela
+		// Pega string ja convertendo para int, caos null retorna null
+		obj.setId(Utils.tryParseToInt(txtId.getText()));
+		// pegar o nome da tela:
+		obj.setName(txtName.getText());
+
+		return obj;
+	}
+
+	@FXML
+	public void onBtCancelAction(ActionEvent event)
+	{
+		//fecha a tela, pegando o stage do botão/Event, clicado
+		Utils.currentStage(event).close();
 	}
 
 	@Override
@@ -66,21 +126,21 @@ public class DepartmentFormController implements Initializable {
 		Constraints.setTextFieldMaxLength(txtName, 30);
 	}
 
-	//pega a entidade e popula as caixinhas da tela
+	// pega a entidade e popula as caixinhas da tela
 	public void updateFormData()
 	{
-		//testa se nao esta null: Prgramação de fenciva
+		// testa se nao esta null: Prgramação de fenciva
 		if (entity == null)
 		{
-			//lança uma exceção pois nao foi carregado um department
+			// lança uma exceção pois nao foi carregado um department
 			throw new IllegalStateException("Entity was null");
 		}
-		
-		//Popular os campos:
-		//converter para string
+
+		// Popular os campos:
+		// converter para string
 		txtId.setText(String.valueOf(entity.getId()));
-		
-		//carrega o dado name:
+
+		// carrega o dado name:
 		txtName.setText(entity.getName());
 	}
 }
