@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import application.Main;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,7 +31,8 @@ import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
 
-public class DepartmentListController implements Initializable {
+//implementa a interface DataChangeListener-- fica ouvindo eventos
+public class DepartmentListController implements Initializable, DataChangeListener {
 
 	@FXML
 	private TableView<Department> tableViewDepartment;
@@ -127,10 +129,18 @@ public class DepartmentListController implements Initializable {
 			// injeta o departa no controller na view do formulario
 			// Pega o controller da tela recebida pelo parametro
 			DepartmentFormController controller = loader.getController();
+			
 			// Injeta o objeto no controller
 			controller.setDepartment(obj);
+			
 			// Injeção de dependencia do service:
 			controller.setDepartmentService(new DepartmentService());
+			
+			//Padraão de programação observer: é avançado, alto desacoplamento, o objeto que emite o evento nao conhece que esta escutando
+			//Se inscever para receber o evento observado
+			//Quando o evento for disparado pela classe  sera executado o onDataChanged			
+			controller.subscribeDataChangeListener(this);
+			
 			// Chama o metodo que carrega os dados na tela:
 			controller.updateFormData();
 
@@ -155,6 +165,16 @@ public class DepartmentListController implements Initializable {
 
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
+	}
+
+	@Override
+	public void onDataChanged()
+	{
+		//Seção 23 - implementando o Listner, classe que se increve e fica ouvindo os eventos de outro objeto
+		//Atualiza os dados da tela:
+		updateTableView();
+	
+		
 	}
 
 }

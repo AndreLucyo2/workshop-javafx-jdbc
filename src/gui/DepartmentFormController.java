@@ -1,9 +1,12 @@
 package gui;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import db.DbException;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Constraints;
 import gui.util.Utils;
@@ -24,6 +27,11 @@ public class DepartmentFormController implements Initializable {
 
 	// Injeta a dependencia do serviço do DepartmentoService
 	private DepartmentService service;
+
+	// é a classe que emite o evento.
+	// Instancia uma lista vazia que vai receber os obj ouvintes
+	// Guarda uma lista de objetos interessados em receber o evento (Ouvinte)
+	private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
 
 	@FXML
 	private TextField txtId;
@@ -53,6 +61,13 @@ public class DepartmentFormController implements Initializable {
 		this.service = service;
 	}
 
+	// permite outros betos se inscreverem na lista pada poder ouvir/ receber os eventos
+	public void subscribeDataChangeListener(DataChangeListener listener)
+	{
+		// inscreve os interessados em ouvir os eventos quando algo mudar
+		dataChangeListeners.add(listener);
+	}
+
 	@FXML
 	public void onBtSaveAction(ActionEvent event)
 	{
@@ -78,14 +93,31 @@ public class DepartmentFormController implements Initializable {
 			// Valida se é insert ou update, e grava / cria no banco
 			service.saveOrUpdate(entity);
 
+			// ==========================================================================
+			// Evento que notifica os ouvintes em caso de salvamento com sucesso
+			notifyDataChangeListeners();
+
 			// Manda fechar a janela atual, pega a referencia do evento
 			Utils.currentStage(event).close();
+
 		}
 		catch (DbException e)
 		{
 			Alerts.showAlert("Error saving object", null, e.getMessage(), AlertType.ERROR);
 		}
 
+	}
+
+	//Implementação da classe que emite os eventos
+	//Emite o evento para todos os ouvintes ver Seção 23 aula 282
+	private void notifyDataChangeListeners()
+	{
+		//para cada DataChangeListener da minha lista dataChangeListeners faça ... onDataChanged
+		for (DataChangeListener listener : dataChangeListeners)
+		{
+			//Emite um evendo a cada ciclo:
+			listener.onDataChanged();
+		}
 	}
 
 	// Passar os dados da tela para uma instnaci do objeto obj
@@ -106,7 +138,7 @@ public class DepartmentFormController implements Initializable {
 	@FXML
 	public void onBtCancelAction(ActionEvent event)
 	{
-		//fecha a tela, pegando o stage do botão/Event, clicado
+		// fecha a tela, pegando o stage do botão/Event, clicado
 		Utils.currentStage(event).close();
 	}
 
