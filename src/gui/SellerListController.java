@@ -6,6 +6,7 @@
 package gui;
 
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -43,11 +44,21 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 	@FXML
 	private TableColumn<Seller, String> tableColumnName;
+	
+	@FXML
+	private TableColumn<Seller, String> tableColumnEmail;
+	
+	@FXML
+	private TableColumn<Seller, Date> tableColumnBirthDate;
+	
+	@FXML
+	private TableColumn<Seller, Double> tableColumnBaseSalary;
 
-	// Coluna qcom ação de edição
+	// Coluna com ação de edição
 	@FXML
 	private TableColumn<Seller, Seller> tableColumnEDIT;
 
+	// Coluna com ação de deletar
 	@FXML
 	private TableColumn<Seller, Seller> tableColumnREMOVE;
 
@@ -89,9 +100,19 @@ public class SellerListController implements Initializable, DataChangeListener {
 
 	private void initializeNodes()
 	{
-		// Inicia o comportament das colunas:
+		// Inicia o comportament das colunas: deve ser o mesmo nome do campo na classe entidade
 		tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
 		tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
+		
+		tableColumnEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+		//Coluna do tipo data
+		tableColumnBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
+		//Para que a data apareça formatada , aplica o metodo em Utils
+		Utils.formatTableColumnDate(tableColumnBirthDate, "dd/MM/yyyy");
+		//Coluna do tipo numero com casas decimais
+		tableColumnBaseSalary.setCellValueFactory(new PropertyValueFactory<>("baseSalary"));
+		//Para que a data apareça formatada , aplica o metodo em Utils
+		Utils.formatTableColumnDouble(tableColumnBaseSalary, 2);		
 
 		// Fazer a Table acompanhar a janela: Macete
 		Stage stage = (Stage) Main.getMainScene().getWindow();
