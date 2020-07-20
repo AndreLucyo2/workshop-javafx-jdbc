@@ -36,6 +36,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Seller;
+import model.services.DepartmentService;
 import model.services.SellerService;
 
 // implementa a interface DataChangeListener-- fica ouvindo eventos
@@ -174,8 +175,11 @@ public class SellerListController implements Initializable, DataChangeListener {
 			// Injeta o objeto no controller
 			controller.setSeller(obj);
 
-			// Injeção de dependencia do service:
-			controller.setSellerService(new SellerService());
+			// Injeção de dependencia do service:ao carregar a tela ja defini os objetos de serviço
+			controller.setServices(new SellerService(),new DepartmentService());
+			
+			//Metodo que carrega o combox dos departamentos do banco de dados
+			controller.loadAssociatedObjects();
 
 			// Padraão de programação observer: é avançado, alto desacoplamento, o objeto que emite o evento nao
 			// conhece que esta escutando
@@ -204,7 +208,10 @@ public class SellerListController implements Initializable, DataChangeListener {
 		}
 		catch (IOException e)
 		{
+			//manda imprimir todos os erros no console
+			e.printStackTrace();
 
+			//mostra elerta de erro:
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}

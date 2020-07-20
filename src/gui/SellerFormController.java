@@ -15,16 +15,24 @@ import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Constraints;
 import gui.util.Utils;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.util.Callback;
+import model.entities.Department;
 import model.entities.Seller;
 import model.exceptions.ValidationException;
+import model.services.DepartmentService;
 import model.services.SellerService;
 
 // or form tem dupla função, adicionar e atualizar
@@ -34,6 +42,9 @@ public class SellerFormController implements Initializable {
 
 	// Injeta a dependencia do serviço do SelleroService
 	private SellerService service;
+
+	// faz injeção de dependencia para pegar a lista dos department
+	private DepartmentService departmentService;
 
 	// é a classe que emite o evento.
 	// Instancia uma lista vazia que vai receber os obj ouvintes
@@ -56,6 +67,9 @@ public class SellerFormController implements Initializable {
 	private TextField txtBaseSalary;
 
 	@FXML
+	private ComboBox<Department> comboBoxDepartment;
+
+	@FXML
 	private Label labelErrorName;
 
 	@FXML
@@ -73,6 +87,9 @@ public class SellerFormController implements Initializable {
 	@FXML
 	private Button btCancel;
 
+	// Lista para o bombo Department
+	private ObservableList<Department> obsList;
+
 	// Injeção de depencia: seta a entidade do departamento
 	public void setSeller(Seller entity)
 	{
@@ -80,10 +97,14 @@ public class SellerFormController implements Initializable {
 		this.entity = entity;
 	}
 
-	// Injeção de dependencia do serviço
-	public void setSellerService(SellerService service)
+	// Injeção de dependencia do serviço, e da lista de departamentos
+	public void setServices(SellerService service, DepartmentService departmentService)
 	{
+		// Injetos o serviço, para pegar os serviços
 		this.service = service;
+
+		// Injeta depatament, para carregar o combo
+		this.departmentService = departmentService;
 	}
 
 	// permite outros betos se inscreverem na lista pada poder ouvir/ receber os eventos
@@ -200,6 +221,7 @@ public class SellerFormController implements Initializable {
 	}
 
 	// definira as restrições dos campos:
+	// carregas e definir os nodos = controles da tela
 	private void initializeNodes()
 	{
 		// Campo id so aceita inteiros
@@ -213,9 +235,13 @@ public class SellerFormController implements Initializable {
 		// Formata a data usando classe Utils: formata a data que vem do DatePicker
 		Utils.formatDatePicker(dpBirthDate, "dd/MM/yyyy");
 
+		// Carregar o controle Combobox
+		initializeComboBoxDepartment();
+
 	}
 
 	// pega a entidade e popula as caixinhas da tela
+	// Metodo que pega os dados dos objetos e preenche os campos na tela
 	public void updateFormData()
 	{
 		// testa se nao esta null: Prgramação de fenciva
@@ -231,7 +257,7 @@ public class SellerFormController implements Initializable {
 
 		// carrega o dado name:
 		txtName.setText(entity.getName());
-		
+
 		// carrega o dado email:
 		txtEmail.setText(entity.getEmail());
 
@@ -239,15 +265,50 @@ public class SellerFormController implements Initializable {
 		Locale.setDefault(Locale.US);
 		// carrega o dado velo, convertendo double para String:
 		txtBaseSalary.setText(String.format("%.2f", entity.getBaseSalary()));
-		
-		//a conversao nao aceita valour null, dessa forma faz um teste antes
-		//so converte se nao tiver nulo
+
+		// a conversao nao aceita valour null, dessa forma faz um teste antes
+		// so converte se nao tiver nulo
 		if (entity.getBirthDate() != null)
 		{
 			// no banco a data esta grava independente da localidade, porem na tela
-			// deve ser mostrada levando em consideração o local, pegando o fuzorario do pc onde esta rodando a aplicação
+			// deve ser mostrada levando em consideração o local, pegando o fuzorario do pc onde esta rodando a
+			// aplicação
 			dpBirthDate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()));
 		}
+
+		//COMBOBOX:
+		//passa os dados para o combobox
+		//Testa se nao tem dados, no caso de ser o primeiro dado
+		if (entity.getDepartment() == null)
+		{
+			//é um vendedor novo, ele nao tem departamnto ainda
+			//Manda seleciona o primeir elemento do combobox
+			comboBoxDepartment.getSelectionModel().selectFirst();
+		}
+		else
+		{
+			//Caso ja tenha um departamento associado, carrega ele no combo
+			//no aso de edição de um registro
+			comboBoxDepartment.setValue(entity.getDepartment());
+		}
+	}
+
+	// Carregar os ojetos assiciados a tela:
+	// Carregar o combobox
+	public void loadAssociatedObjects()
+	{
+		// Valida se nao foi feito a injeção de dependencia la na hora de carregar a tela
+		if (departmentService == null)
+		{
+			throw new IllegalStateException("DepartmentService was null");
+		}
+
+		// Carrega os departamentos do banco
+		List<Department> list = departmentService.findAll();
+		// Passa a lista retornada para a lista:
+		obsList = FXCollections.observableArrayList(list);
+		// Passa a list para o Combobox
+		comboBoxDepartment.setItems(obsList);
 	}
 
 	// metodo responsável por pegar as mensagens de erro e mostrar na tela
@@ -264,5 +325,21 @@ public class SellerFormController implements Initializable {
 			// Mostra o erro em uma label na tela , para exemplo
 			labelErrorName.setText(errors.get("name"));
 		}
+	}
+
+	// Metodo que carrega o combobox e atualiza
+	private void initializeComboBoxDepartment()
+	{
+		Callback<ListView<Department>, ListCell<Department>> factory = lv -> new ListCell<Department>()
+		{
+			@Override
+			protected void updateItem(Department item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setText(empty ? "" : item.getName());
+			}
+		};
+		comboBoxDepartment.setCellFactory(factory);
+		comboBoxDepartment.setButtonCell(factory.call(null));
 	}
 }
