@@ -1,9 +1,11 @@
 package gui;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -185,21 +187,65 @@ public class SellerFormController implements Initializable {
 		// Pega string ja convertendo para int, caos null retorna null
 		obj.setId(Utils.tryParseToInt(txtId.getText()));
 
+		// CAMPO NOME:--------------------------------------------------------------
 		// Validação: o campo nome nao pode ser vazio:
 		if (txtName.getText() == null || txtName.getText().trim().equals(""))
 		{
 			// Adiciona uma mensagem de erro na exceção
+			//ATENÇÃO! a chave deve ser exatamente igual ao nome do campo da entidade
 			exception.addError("name", "o Campo nao pode ser vazio!!");
 		}
-
 		// pegar o nome da tela:
 		obj.setName(txtName.getText());
 
+		// CAMPO EMAIL:---------------------------------------------------------------
+		// Teste se é nulo ou vazio:
+		if (txtEmail.getText() == null || txtEmail.getText().trim().equals(""))
+		{
+			// Adiciona uma mensagem de erro na exceção
+			//ATENÇÃO! a chave deve ser exatamente igual ao nome do campo da entidade
+			exception.addError("email", "Field can't be empty");
+		}
+		obj.setEmail(txtEmail.getText());
+
+		// CAMPO BIRTHDATE:-----------------------------------------------------------
+		// Teste se é nulo ou vazio:
+		if (dpBirthDate.getValue() == null)
+		{
+			
+			// Adiciona uma mensagem de erro na exceção
+			//ATENÇÃO! a chave deve ser exatamente igual ao nome do campo da entidade
+			exception.addError("birthDate", "Field can't be empty");
+		}
+		else
+		{
+			// recebe o conteudo do datepicker - converte a data com horario do pc, para uma data
+			// independente da região, pois no banco fica a data sem região
+			Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+			// passa para o campo:
+			obj.setBirthDate(Date.from(instant));
+		}
+
+		// CAMPO BASE SALARY:--------------------------------------------------------------
+		// Teste se é nulo ou vazio:
+		if (txtBaseSalary.getText() == null || txtBaseSalary.getText().trim().equals(""))
+		{
+			// Adiciona uma mensagem de erro na exceção
+			//ATENÇÃO! a chave deve ser exatamente igual ao nome do campo da entidade
+			exception.addError("baseSalary", "Field can't be empty");
+		}
+		// tem que converte de Strind para double, se preencher errado vai ficar como null
+		obj.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
+
+		//Pega o departament do Combobox
+		obj.setDepartment(comboBoxDepartment.getValue());
+		
 		// Testa se a exceção pegando os erros for maior que zero
 		// tese se na coleção tem pelo menos um erro
 		// lana a exceção caso tenha algum erro
 		if (exception.getErrors().size() > 0)
 		{
+			// Se o tamanho dos erros for maior que zero, lança execção
 			throw exception;
 		}
 
@@ -276,19 +322,19 @@ public class SellerFormController implements Initializable {
 			dpBirthDate.setValue(LocalDate.ofInstant(entity.getBirthDate().toInstant(), ZoneId.systemDefault()));
 		}
 
-		//COMBOBOX:
-		//passa os dados para o combobox
-		//Testa se nao tem dados, no caso de ser o primeiro dado
+		// COMBOBOX:
+		// passa os dados para o combobox
+		// Testa se nao tem dados, no caso de ser o primeiro dado
 		if (entity.getDepartment() == null)
 		{
-			//é um vendedor novo, ele nao tem departamnto ainda
-			//Manda seleciona o primeir elemento do combobox
+			// é um vendedor novo, ele nao tem departamnto ainda
+			// Manda seleciona o primeir elemento do combobox
 			comboBoxDepartment.getSelectionModel().selectFirst();
 		}
 		else
 		{
-			//Caso ja tenha um departamento associado, carrega ele no combo
-			//no aso de edição de um registro
+			// Caso ja tenha um departamento associado, carrega ele no combo
+			// no aso de edição de um registro
 			comboBoxDepartment.setValue(entity.getDepartment());
 		}
 	}
@@ -311,6 +357,7 @@ public class SellerFormController implements Initializable {
 		comboBoxDepartment.setItems(obsList);
 	}
 
+	// Passar as mensagens de erro para o label da tela
 	// metodo responsável por pegar as mensagens de erro e mostrar na tela
 	// Recebe uma coleção de erros.
 	private void setErrorMessages(Map<String, String> errors)
@@ -318,6 +365,9 @@ public class SellerFormController implements Initializable {
 		// cria um conjunto de campos
 		Set<String> fields = errors.keySet();
 
+		// Adiciona uma mensagem de erro na exceção
+		//ATENÇÃO! no if deve ser exatamente igual ao nome do campo da entidade		
+		//Mostra erro no campo nome no label da tela:
 		// percorre a lista de campos, percorre a lista, buscanso pelo nome do campo
 		// busca na coleção se possui alguma mensagem com o nome do campo
 		if (fields.contains("name"))
@@ -325,6 +375,22 @@ public class SellerFormController implements Initializable {
 			// Mostra o erro em uma label na tela , para exemplo
 			labelErrorName.setText(errors.get("name"));
 		}
+		else
+		{
+			//Limpar o erro:
+			labelErrorName.setText(errors.get(""));
+		}
+
+		// O if pode ser feito de forma forma TERNARIA:
+		//Mostra erro no campo nome no label, caso nao tem erro, o label fica vazio
+		labelErrorEmail.setText((fields.contains("email") ? errors.get("email") : ""));
+		
+		//Mostra erro no campo nome no label, caso nao tem erro, o label fica vazio
+		labelErrorBirthDate.setText((fields.contains("birthDate") ? errors.get("birthDate") : ""));
+		
+		//Mostra erro no campo nome no label, caso nao tem erro, o label fica vazio
+		labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errors.get("baseSalary") : ""));
+
 	}
 
 	// Metodo que carrega o combobox e atualiza
