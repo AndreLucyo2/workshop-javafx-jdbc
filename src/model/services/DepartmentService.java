@@ -16,7 +16,7 @@ public class DepartmentService {
 		return dao.findAll();
 	}
 
-	//Faz o serviço de validar se esta inserindo ou atualizando
+	// Faz o serviço de validar se esta inserindo ou atualizando
 	// se o objeto esta carregado, esta alterando, caso null, esta inserindo
 	public void saveOrUpdate(Department obj)
 	{
@@ -28,5 +28,11 @@ public class DepartmentService {
 		{
 			dao.update(obj);
 		}
+	}
+
+	//Faz o serviço de deletar do banco de dados
+	public void remove(Department obj)
+	{
+		dao.deleteById(obj.getId());
 	}
 }

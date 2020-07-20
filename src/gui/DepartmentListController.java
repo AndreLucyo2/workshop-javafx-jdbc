@@ -8,9 +8,11 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import application.Main;
+import db.DbIntegrityException;
 import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Utils;
@@ -24,6 +26,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -49,6 +52,9 @@ public class DepartmentListController implements Initializable, DataChangeListen
 	// Coluna qcom ação de edição
 	@FXML
 	private TableColumn<Department, Department> tableColumnEDIT;
+
+	@FXML
+	private TableColumn<Department, Department> tableColumnREMOVE;
 
 	@FXML
 	private Button btNew;
@@ -117,10 +123,13 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
 		// Carrega a observablelist na table view
 		tableViewDepartment.setItems(obsList);
-		
-		//vai criar um botão de edição em cada linha que tiver dados
-		//Ao clicar abre a tela de edição:
+
+		// vai criar um botão de edição em cada linha que tiver dados
+		// Ao clicar abre a tela de edição:
 		initEditButtons();
+		
+		// vai criar um botão para remover em cada linha que tiver dados
+		initRemoveButtons();
 	}
 
 	// Ao criar uma janela, sempre precisa informar o stage que criou a janela de dialogo,
@@ -189,7 +198,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
 	}
 
-	// Metodo que cria uma botão, e ja configura um evento para o botão
+	// Metodo que cria uma botão Edit, e ja configura um evento para o botão
 	// Ver material de apoio seção 23 - Update department
 	private void initEditButtons()
 	{
@@ -198,7 +207,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 		tableColumnEDIT.setCellFactory(param -> new TableCell<Department, Department>()
 		{
 			// Cria o botao: edit
-			private final Button button = new Button("edit");
+			private final Button button = new Button("Editar");
 
 			// Carrega o objeto da linha que tiver clicado
 			@Override
@@ -219,6 +228,69 @@ public class DepartmentListController implements Initializable, DataChangeListen
 				event -> createDialogForm(obj, "/gui/DepartmentForm.fxml", Utils.currentStage(event)));
 			}
 		});
+	}
+
+	// Metodo que cria uma botão Remove, e ja configura um evento para o botão
+	// Ver material de apoio seção 23 - Remove department
+	private void initRemoveButtons()
+	{
+		// Coluna de remove: metodo especifico para javaFX
+		tableColumnREMOVE.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+		tableColumnREMOVE.setCellFactory(param -> new TableCell<Department, Department>()
+		{
+			// Cria o botao: edit
+			private final Button button = new Button("remove");
+
+			// Carrega o objeto da linha que tiver clicado
+			@Override
+			protected void updateItem(Department obj, boolean empty)
+			{
+				super.updateItem(obj, empty);
+				
+				// Testa se o objeto nao esta null
+				if (obj == null)
+				{
+					setGraphic(null);
+					return;
+				}
+				
+				// Define a ação do botão - usando lambda: Executa metodo removeEntity
+				setGraphic(button);
+				button.setOnAction(event -> removeEntity(obj));
+			}
+		});
+	}
+
+	//
+	private void removeEntity(Department obj)
+	{
+		//Mostra o Alert para confirmar a deleção, pega o resulstado do Alert = botão clicado
+		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Tem certeza que voce quer deletar?");
+
+		//verificar o que foi clicado, se foi clicado OK, confirmou a deleção
+		if (result.get() == ButtonType.OK)
+		{
+			//Testa se foi injetado o serviço
+			if (service == null)
+			{
+				throw new IllegalStateException("Service was null");
+			}
+			
+			//Vaida se resulta alguma exceptin de integridade
+			try
+			{
+				//Faz o remove:
+				service.remove(obj);
+				
+				//Atualiza a tableView
+				updateTableView();
+			}
+			catch (DbIntegrityException e)
+			{
+				//Alerta de erro ao deletar. exemplo: item esta em uso .. etc.
+				Alerts.showAlert("Error removing object! \n este item esta em uso nao pode ser removido", null, e.getMessage(), AlertType.ERROR);
+			}
+		}
 	}
 
 }
