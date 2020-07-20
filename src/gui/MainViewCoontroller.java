@@ -22,6 +22,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import model.services.DepartmentService;
+import model.services.SellerService;
 
 public class MainViewCoontroller implements Initializable {
 
@@ -37,13 +38,30 @@ public class MainViewCoontroller implements Initializable {
 	@FXML
 	public void onMenuItemSellerAction()
 	{
-		System.out.println("onMenuItemSellerAction");
+
+		// ====================================================================================
+		// LoadView com função de CARREGAR OS DADOS NA TABLEVIEW
+		// ====================================================================================
+		// Load view com uma função de inicialização:
+		// usa uma função lambda, esta fução faz o carregamento
+		// da tableview, DepartmentListController o consumer<T> retorna o controller da classe informada
+		loadView("/gui/SellerList.fxml", (SellerListController controller) ->
+		{
+
+			// Carregar os dados na tableview --pega o controller da List e usa o serviço
+			controller.setSellerService(new SellerService());
+
+			// usa a injeção da dependencia criado no DepartmentListController:
+			// com isso tem acesso ao metodo para carregar a listagem:
+			controller.updateTableView();
+
+		});
 	}
 
 	@FXML
 	public void onMenuItemDepartmentAction()
 	{
-		//Primeira versao, sem carregamento:
+		// Primeira versao, sem carregamento:
 		// loadView("/gui/DepartmentList.fxml");
 
 		// ====================================================================================
@@ -80,8 +98,9 @@ public class MainViewCoontroller implements Initializable {
 
 	}
 
-	//usa uma função como parametro, usa lambda e generics consumer<T> de um tipo qualquer e inicializavel
-	//adicona o comando para executar a função:
+	// usa uma função como parametro, usa lambda e generics consumer<T> de um tipo qualquer e
+	// inicializavel
+	// adicona o comando para executar a função:
 	private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction)
 	{
 		try
@@ -113,8 +132,8 @@ public class MainViewCoontroller implements Initializable {
 			// ====================================================================================
 			// CARREGAR OS DADOS NA TABLEVIEW - função como argumento
 			// ====================================================================================
-			//pega o controller da List e usa o serviço, retorna um controller do tipo T
-			//estas duas linhas executam a função que for passada como argumento
+			// pega o controller da List e usa o serviço, retorna um controller do tipo T
+			// estas duas linhas executam a função que for passada como argumento
 			T controller = loader.getController();
 			initializingAction.accept(controller);
 		}
@@ -124,6 +143,5 @@ public class MainViewCoontroller implements Initializable {
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}
-	
 
 }
