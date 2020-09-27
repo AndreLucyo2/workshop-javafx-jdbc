@@ -16,7 +16,7 @@ public class ValidationException extends RuntimeException {
 		super(msg);
 	}
 
-	// Carregar as mensagens de erros, pois cada campo pode ter uma excepiton especifica , propria
+	// Carregar as mensagens de erros, pois cada campo pode ter uma excepition especifica , propria
 	// Coleção de pares chave valor:
 	// Guarda os erros de cada campo do formulario
 	// a chave é o nome do campo

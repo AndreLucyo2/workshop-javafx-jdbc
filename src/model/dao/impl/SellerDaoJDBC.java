@@ -33,6 +33,8 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public void insert(Seller obj)
 	{
+		
+		
 		PreparedStatement st = null;
 		try
 		{

@@ -103,6 +103,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 	{
 		initializeNodes();
 	}
+		
 
 	private void initializeNodes()
 	{
@@ -124,6 +125,16 @@ public class SellerListController implements Initializable, DataChangeListener {
 		Stage stage = (Stage) Main.getMainScene().getWindow();
 		// Controla o teamaha da table view conforme ajusta a tela:
 		tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
+
+	}
+	
+	@Override
+	public void onDataChanged()
+	{
+		// Seção 23 - implementando o Listner, classe que se increve e fica ouvindo os eventos de outro
+		// objeto
+		// Atualiza os dados da tela:
+		updateTableView();
 
 	}
 
@@ -216,15 +227,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 		}
 	}
 
-	@Override
-	public void onDataChanged()
-	{
-		// Seção 23 - implementando o Listner, classe que se increve e fica ouvindo os eventos de outro
-		// objeto
-		// Atualiza os dados da tela:
-		updateTableView();
 
-	}
 
 	// Metodo que cria uma botão Edit, e ja configura um evento para o botão
 	// Ver material de apoio seção 23 - Update department

@@ -23,7 +23,7 @@ public class Main extends Application {
 	{
 		try
 		{
-			// 1- Lê/Carrega o FXML - Passar o caminho completo do FXML da VIEW/Tela
+			// 1- Ler/Carrega o FXML - Passar o caminho completo do FXML da VIEW/Tela
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainView.fxml"));
 
 			// 2 - Carregar o control principal com a VIEW:

@@ -27,3 +27,4 @@ public class DaoFactory {
 	}
 	
 }
+//ADAPTER E PADRAO FACTORY

@@ -38,6 +38,11 @@ public class MainViewCoontroller implements Initializable {
 	@FXML
 	public void onMenuItemSellerAction()
 	{
+	    // ====================================================================================
+	    // CARREGAR OS DADOS NA TABLEVIEW - função como argumento
+	    // ====================================================================================
+	    // pega o controller da List e usa o serviço, retorna um controller do tipo T
+		
 
 		// ====================================================================================
 		// LoadView com função de CARREGAR OS DADOS NA TABLEVIEW
